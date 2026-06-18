@@ -1,0 +1,18 @@
+{
+  "name": "折纸寻路游戏",
+  "version": "1.0.0",
+  "description": "折纸寻路游戏",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "vite-plugin-singlefile": "^2.3.3"
+  },
+  "dependencies": {
+    "phaser": "^3.80.0"
+  }
+}
