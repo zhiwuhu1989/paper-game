@@ -18,7 +18,7 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  base: '/phaser-game/',   // ← 改成你的仓库名，前后斜杠要对
+  base: '/paper-game/',   // ← 改成你的仓库名，前后斜杠要对
   build: {
     outDir: 'dist',
     assetsDir: 'assets'
