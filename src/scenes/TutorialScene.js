@@ -383,12 +383,22 @@ export class TutorialScene extends Phaser.Scene {
       // 停止当前对话音效
       this.stopDialogueSound();
       
-      // 显示点击继续提示
-      this.tweens.add({
-        targets: this.clickHint,
-        alpha: 0.7,
-        duration: 300
-      });
+      // 判断是否是最后一条对话
+      const isLastDialogue = this.currentDialogueIndex >= this.dialogues.length - 1;
+      
+      if (isLastDialogue) {
+        // 最后一条对话：直接完成，不显示点击继续提示
+        this.dialogueComplete = true;
+        this.hideDialogue();
+        this.startTutorial();
+      } else {
+        // 显示点击继续提示
+        this.tweens.add({
+          targets: this.clickHint,
+          alpha: 0.7,
+          duration: 300
+        });
+      }
     });
   }
   

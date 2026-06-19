@@ -12,10 +12,15 @@ export class DialogueBox {
   }
 
   createUI() {
-    const boxWidth = GAME_WIDTH * 0.8;
+    // 使用相机尺寸而不是固定尺寸
+    const camera = this.scene.cameras.main;
+    const cameraWidth = camera.width;
+    const cameraHeight = camera.height;
+    
+    const boxWidth = cameraWidth * 0.8;
     const boxHeight = 120;
-    const boxX = (GAME_WIDTH - boxWidth) / 2;
-    const boxY = GAME_HEIGHT - boxHeight - 20;
+    const boxX = (cameraWidth - boxWidth) / 2;
+    const boxY = cameraHeight - boxHeight - 20;
 
     // Background box
     this.bg = this.scene.add.graphics();
