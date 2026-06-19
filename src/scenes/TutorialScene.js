@@ -5,7 +5,7 @@
  *   - 引导玩家向上和下拖拽打开纸张，模仿睁开双眼
  */
 import Phaser from 'phaser';
-import { PAPER_WIDTH, PAPER_HEIGHT, CELL_SIZE, GRID_COLS, GRID_ROWS } from '../config/gameConfig.js';
+import { PAPER_WIDTH, PAPER_HEIGHT, CELL_SIZE, GRID_COLS, GRID_ROWS, PAPER_TEMPLATES, DECOR_TYPES } from '../config/gameConfig.js';
 import { PaperContainer } from '../components/PaperContainer.js';
 
 export class TutorialScene extends Phaser.Scene {
@@ -39,9 +39,29 @@ export class TutorialScene extends Phaser.Scene {
     this.load.image('tutorial_back', 'assets/bg_2_0.png');   // 背面纸张
     this.load.image('tutorial_front', 'assets/bg_1_1.png');  // 正面纸张
     this.load.image('bg_2_0', 'assets/bg_2_0.png');  // 底层纹理
-
-    // 加载道路资源
+    this.load.image('paper_1', 'assets/paper_1.png');
+    this.load.image('paper_2', 'assets/paper_2.png');
+    
+    // 加载道路和桥梁资源
     this.load.image('road', 'assets/road.png');
+    this.load.image('bridge_1_0', 'assets/bridge_1_0.png');
+    this.load.image('bridge_1_1', 'assets/bridge_1_1.png');
+    this.load.image('fire_1_0', 'assets/fire_1_0.png');
+    this.load.image('fire_1_1', 'assets/fire_1_1.png');
+    
+    // 加载装饰资源
+    this.load.image('tree_1', 'assets/tree_1.png');
+    this.load.image('tree_2', 'assets/tree_2.png');
+    this.load.image('tree_3', 'assets/tree_3.png');
+    this.load.image('tree_4', 'assets/tree_4.png');
+    
+    // 加载建筑资源
+    this.load.image('house_1', 'assets/house_1.png');
+    
+    // 加载角色资源
+    this.load.image('npc_1', 'assets/npc_1.png');
+    this.load.image('npc_2', 'assets/npc_2.png');
+    this.load.image('npc_3', 'assets/npc_3.png');
 
     // 加载箭头图片资源
     this.load.image('arrow', 'assets/arrow.png');
@@ -167,7 +187,41 @@ export class TutorialScene extends Phaser.Scene {
     const tutorialPaperData = {
       roadMap: Array.from({ length: GRID_ROWS }, () => Array(GRID_COLS).fill(0)),
       backRoadMap: Array.from({ length: GRID_ROWS }, () => Array(GRID_COLS).fill(0)),
-      frontDecorations: [],
+      frontDecorations: [
+        { 
+                type: DECOR_TYPES.NORMAL, 
+                name: "paper_1", 
+                texture:"paper_1", x: 7, y: 6, 
+                width: 212, height: 368, offsetX: 44, offsetY: 25
+              },
+              // paper_1 下面的隐藏道路（拼图完成后显示）
+              { 
+                type: DECOR_TYPES.HIDDEN_ROAD, 
+                name: "hidden_road_under_paper1",
+                roadCells: [
+                  {x: 7, y: 6}, {x: 8, y: 6}, {x: 9, y: 6},
+                  {x: 7, y: 7}, {x: 8, y: 7}, {x: 9, y: 7},
+                  {x: 7, y: 8}, {x: 8, y: 8}, {x: 9, y: 8},
+                  {x: 7, y: 9}, {x: 8, y: 9}, {x: 9, y: 9}
+                ],
+                visible: false  // 初始隐藏
+              },
+              // 需要修复的装饰：向下折叠3格才能修复
+              { type: DECOR_TYPES.REPAIR, 
+                name: "broken_bridge",
+                texture:"bridge_1_0", good:"bridge_1_1", x: 4, y: 7, 
+                offsetX: 16, offsetY: -12,
+                width: 190, height: 157, repairCondition: { bottom: 4 },
+                fillRoad:[{x:4,y:6},{x:5,y:6}] 
+              },
+              { type: DECOR_TYPES.REPAIR, 
+                name: "broken_fire",
+                texture:"fire_1_0", good:"fire_1_1", x: 1, y: 6, 
+                offsetX: 30, offsetY: 30,
+                width: 99, height: 106, repairCondition: { bottomLeft: 4 },
+                fillRoad:[] 
+              }
+      ],
       backDecorations: [],
       frontPaper: 'tutorial_front',  // 正面背景纹理
       backPaper: 'tutorial_back'     // 背面背景纹理
