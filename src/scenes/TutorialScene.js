@@ -18,6 +18,11 @@ export class TutorialScene extends Phaser.Scene {
     this.foldComplete = false;
     this.foldRequired = 0; // 需要折叠的距离
 
+    // 分步引导状态：'top' 先引导向上滑，'bottom' 再引导向下滑，'done' 完成
+    this.guidePhase = 'top';
+    this.topGuideComplete = false;  // 上方引导是否完成
+    this.bottomGuideComplete = false; // 下方引导是否完成
+
     // 音效相关
     this.currentDialogueSound = null; // 当前播放的对话音效
     this.soundEnabled = true; // 音效开关
@@ -404,9 +409,9 @@ export class TutorialScene extends Phaser.Scene {
   startTutorial() {
     this.tutorialStarted = true;
     
-    // 显示引导提示
+    // 显示引导提示 - 只显示上方阶段的元素
     this.tweens.add({
-      targets: [this.guideText, this.upArrow, this.downArrow, this.upHand, this.downHand],
+      targets: [this.guideText, this.upArrow, this.upHand],
       alpha: 1,
       duration: 500,
       onComplete: () => {
@@ -430,8 +435,8 @@ export class TutorialScene extends Phaser.Scene {
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
     
-    // 上下拖拽提示
-    this.guideText = this.add.text(centerX, centerY - 120, '向上下拖拽打开双眼', {
+    // 上下拖拽提示（初始提示向上滑）
+    this.guideText = this.add.text(centerX, centerY - 120, '向上拖拽打开上眼', {
       fontSize: '20px',
       fontFamily: 'Microsoft YaHei',
       color: '#ffffff',
@@ -442,13 +447,16 @@ export class TutorialScene extends Phaser.Scene {
     this.guideText.setDepth(50);
     this.guideText.setAlpha(0);
     
-    // 箭头提示
+    // 箭头提示 - 初始只显示上箭头
     this.upArrow = this.createArrow(centerX, centerY - 20, 'up');
     this.downArrow = this.createArrow(centerX, centerY + 20, 'down');
+    this.downArrow.setAlpha(0); // 初始隐藏下箭头
     
     // 创建小手（初始位置在中心偏右80像素，避免和箭头重叠）
+    // 初始只显示上方小手
     this.upHand = this.createHand(centerX + 80, centerY, 'up');
     this.downHand = this.createHand(centerX + 80, centerY, 'down');
+    this.downHand.setAlpha(0); // 初始隐藏下方小手
   }
 
   /**
@@ -471,26 +479,23 @@ export class TutorialScene extends Phaser.Scene {
    * 开始小手演示动画
    */
   startHandDemo() {
-    // 上方小手向上拖动演示
-    if (this.upHand) {
+    // 根据当前引导阶段播放对应的小手动画
+    if (this.guidePhase === 'top' && this.upHand) {
+      // 上方阶段：只播放上方小手动画
       this.tweens.add({
         targets: this.upHand,
         y: this.upHand.y - 60,
-        alpha: 1,
         duration: 600,
         ease: 'Power1',
         yoyo: true,
         repeat: -1,
         delay: 200
       });
-    }
-    
-    // 下方小hand向下拖动演示
-    if (this.downHand) {
+    } else if (this.guidePhase === 'bottom' && this.downHand) {
+      // 下方阶段：只播放下方小手动画
       this.tweens.add({
         targets: this.downHand,
         y: this.downHand.y + 60,
-        alpha: 1,
         duration: 600,
         ease: 'Power1',
         yoyo: true,
@@ -587,8 +592,8 @@ export class TutorialScene extends Phaser.Scene {
     const foldTop = this.paperContainer.foldTop;
     const foldBottom = this.paperContainer.foldBottom;
     
-    // 检查是否完成（上下都打开到一定程度）
-    if (foldTop === this.foldRequired && foldBottom === this.foldRequired) {
+    // 检查是否完成（上下都完全打开，foldTop 和 foldBottom 都接近 0）
+    if (foldTop <= 5 && foldBottom <= 5) {
       this.foldComplete = true;
       this.onFoldComplete();
     }
@@ -623,35 +628,123 @@ export class TutorialScene extends Phaser.Scene {
     if (!this.paperContainer) return;
     
     // 获取折叠偏移量
-    const foldOffset = this.paperContainer.foldTop;
+    const foldTop = this.paperContainer.foldTop;
+    const foldBottom = this.paperContainer.foldBottom;
     
-    // 当用户开始折叠时，停止演示动画（小手和箭头都保留显示）
-    if (foldOffset > 5 && this.demoStopped !== true) {
-      this.demoStopped = true;
-      // 停止小手的演示动画
-      if (this.upHand) this.tweens.killTweensOf(this.upHand);
-      if (this.downHand) this.tweens.killTweensOf(this.downHand);
-      // 隐藏提示文字
-      if (this.guideText) {
-        this.tweens.add({
-          targets: this.guideText,
-          alpha: 0,
-          duration: 300
-        });
+    // 获取纸张容器位置
+    const paperY = this.paperContainer.y;
+    const centerX = this.cameras.main.centerX;
+    
+    // ========== 上方引导阶段 ==========
+    if (this.guidePhase === 'top') {
+      // 当用户开始折叠时，停止演示动画
+      if (foldTop < PAPER_HEIGHT / 2 - 10 && this.demoStopped !== true) {
+        this.demoStopped = true;
+        if (this.upHand) this.tweens.killTweensOf(this.upHand);
+      }
+      
+      // 更新上方小手位置，跟随顶部边缘
+      if (this.upHand) {
+        this.upHand.y = paperY + foldTop;
+      }
+      
+      // 上方完全打开（foldTop 接近 0），切换到下方阶段
+      if (foldTop <= 5 && !this.topGuideComplete) {
+        this.topGuideComplete = true;
+        this.guidePhase = 'bottom';
+        this.demoStopped = false; // 重置以便下方小手动画
+        
+        // 隐藏上方小手和箭头
+        if (this.upHand) {
+          this.tweens.add({
+            targets: this.upHand,
+            alpha: 0,
+            duration: 300
+          });
+        }
+        if (this.upArrow) {
+          this.tweens.add({
+            targets: this.upArrow,
+            alpha: 0,
+            duration: 300
+          });
+        }
+        
+        // 更新提示文字
+        if (this.guideText) {
+          this.guideText.setText('向下拖拽打开下眼');
+          this.tweens.add({
+            targets: this.guideText,
+            alpha: 1,
+            duration: 300
+          });
+        }
+        
+        // 显示下方小手和箭头
+        if (this.downHand) {
+          this.downHand.y = paperY + PAPER_HEIGHT - foldBottom;
+          this.tweens.add({
+            targets: this.downHand,
+            alpha: 1,
+            duration: 300,
+            onComplete: () => {
+              // 开始下方小手演示动画
+              this.startHandDemo();
+            }
+          });
+        }
+        if (this.downArrow) {
+          this.tweens.add({
+            targets: this.downArrow,
+            alpha: 1,
+            duration: 300
+          });
+        }
       }
     }
-    
-    // 获取小手初始位置（与 createGuideText 中一致）
-    const centerY = this.cameras.main.centerY;
-    const upHandY = centerY;
-    const downHandY = centerY;
-    
-    // 更新小手位置，跟随折叠
-    if (this.upHand) {
-      this.upHand.y = upHandY - foldOffset;
-    }
-    if (this.downHand) {
-      this.downHand.y = downHandY + foldOffset;
+    // ========== 下方引导阶段 ==========
+    else if (this.guidePhase === 'bottom') {
+      // 当用户开始折叠时，停止演示动画
+      if (foldBottom < PAPER_HEIGHT / 2 - 10 && this.demoStopped !== true) {
+        this.demoStopped = true;
+        if (this.downHand) this.tweens.killTweensOf(this.downHand);
+      }
+      
+      // 更新下方小手位置，跟随底部边缘
+      if (this.downHand) {
+        this.downHand.y = paperY + PAPER_HEIGHT - foldBottom;
+      }
+      
+      // 下方完全打开（foldBottom 接近 0），完成引导
+      if (foldBottom <= 5 && !this.bottomGuideComplete) {
+        this.bottomGuideComplete = true;
+        this.guidePhase = 'done';
+        
+        // 隐藏下方小手和箭头
+        if (this.downHand) {
+          this.tweens.add({
+            targets: this.downHand,
+            alpha: 0,
+            duration: 300
+          });
+        }
+        if (this.downArrow) {
+          this.tweens.add({
+            targets: this.downArrow,
+            alpha: 0,
+            duration: 300
+          });
+        }
+        
+        // 隐藏提示文字
+        if (this.guideText) {
+          this.tweens.add({
+            targets: this.guideText,
+            alpha: 0,
+            duration: 300
+          });
+        }
+      }
     }
   }
 
