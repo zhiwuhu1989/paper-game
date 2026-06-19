@@ -27,8 +27,9 @@ export class PaperContainer extends Phaser.GameObjects.Container {
    * @param {number} y 世界坐标 Y
    * @param {string} paperId 纸张唯一ID
    * @param {object} paperData 包含 roadMap 和 decorations 的数据
+   * @param {string} [basePaperTexture='paper_2'] 底层纸张纹理名称
    */
-  constructor(scene, x, y, paperId, paperData) {
+  constructor(scene, x, y, paperId, paperData, basePaperTexture = 'paper_2') {
     super(scene, x, y);
     this.paperId = paperId;
     this.paperData = paperData; // 保存 paperData 引用
@@ -56,8 +57,8 @@ export class PaperContainer extends Phaser.GameObjects.Container {
     // 放进 container（一定要先加，再 add 到 container）
     this.add(bg);  
 
-    // 创建底层背景 sprite（paper_2），直接添加到场景（而非 Container 内），避免受遮罩影响
-    this.basePaper = this.scene.add.image(this.x, this.y, 'paper_2')
+    // 创建底层背景 sprite，直接添加到场景（而非 Container 内），避免受遮罩影响
+    this.basePaper = this.scene.add.image(this.x, this.y, basePaperTexture)
       .setOrigin(0, 0)
       .setDisplaySize(PAPER_WIDTH, PAPER_HEIGHT)
       .setDepth(-1000);

@@ -33,18 +33,20 @@ export class TutorialScene extends Phaser.Scene {
     // 加载纸张相关资源（使用正式背景资源，使用唯一键名避免冲突）
     this.load.image('tutorial_back', 'assets/bg_2_0.png');   // 背面纸张
     this.load.image('tutorial_front', 'assets/bg_1_1.png');  // 正面纸张
+    this.load.image('bg_2_0', 'assets/bg_2_0.png');  // 底层纹理
 
     // 加载道路资源
     this.load.image('road', 'assets/road.png');
 
     // 加载箭头图片资源
-    this.load.image('arrow_up', 'assets/road.png');
-    this.load.image('arrow_down', 'assets/road.png');
+    this.load.image('arrow', 'assets/arrow.png');
 
     // 加载对话音效
     this.load.audio('dialogue_1', 'assets/audio/dialogue_1.wav');
     this.load.audio('dialogue_2', 'assets/audio/dialogue_2.wav');
-    // this.load.audio('dialogue_3', 'assets/audio/dialogue_3.wav');
+    
+    // 加载小手资源
+    this.load.image('hand', 'assets/hand.png');
   }
 
   create() {
@@ -166,14 +168,18 @@ export class TutorialScene extends Phaser.Scene {
       backPaper: 'tutorial_back'     // 背面背景纹理
     };
     
-    // 创建 PaperContainer
+    // 创建 PaperContainer，使用 bg_2_0 作为底层纹理
     this.paperContainer = new PaperContainer(
       this,
       this.cameras.main.centerX - PAPER_WIDTH / 2,
       this.cameras.main.centerY - PAPER_HEIGHT / 2,
       'tutorial_paper',
-      tutorialPaperData
+      tutorialPaperData,
+      'bg_2_0'
     );
+    
+    // 设置 PaperContainer 的深度为 0，确保箭头和小手能显示在上面
+    this.paperContainer.setDepth(0);
     
     // 初始化为闭合状态（上下各折叠一半）
     this.paperContainer.foldTop = PAPER_HEIGHT / 2 - 5;
@@ -400,9 +406,13 @@ export class TutorialScene extends Phaser.Scene {
     
     // 显示引导提示
     this.tweens.add({
-      targets: [this.guideText, this.upArrow, this.downArrow],
+      targets: [this.guideText, this.upArrow, this.downArrow, this.upHand, this.downHand],
       alpha: 1,
-      duration: 500
+      duration: 500,
+      onComplete: () => {
+        // 显示完成后开始小手演示动画
+        this.startHandDemo();
+      }
     });
     
     // 淡出中心缝隙
@@ -435,6 +445,58 @@ export class TutorialScene extends Phaser.Scene {
     // 箭头提示
     this.upArrow = this.createArrow(centerX, centerY - 20, 'up');
     this.downArrow = this.createArrow(centerX, centerY + 20, 'down');
+    
+    // 创建小手（初始位置在中心偏右80像素，避免和箭头重叠）
+    this.upHand = this.createHand(centerX + 80, centerY, 'up');
+    this.downHand = this.createHand(centerX + 80, centerY, 'down');
+  }
+
+  /**
+   * 创建小手
+   */
+  createHand(x, y, direction) {
+    const hand = this.add.image(x, y, 'hand');
+    hand.setDepth(200);  // 提高深度，确保在所有内容之上
+    hand.setAlpha(1);    // 直接显示
+    hand.setOrigin(0.5);
+    hand.setScale(0.8);  // 适当缩小一点
+    // 向下的小手翻转
+    if (direction === 'down') {
+      hand.setFlipY(true);
+    }
+    return hand;
+  }
+
+  /**
+   * 开始小手演示动画
+   */
+  startHandDemo() {
+    // 上方小手向上拖动演示
+    if (this.upHand) {
+      this.tweens.add({
+        targets: this.upHand,
+        y: this.upHand.y - 60,
+        alpha: 1,
+        duration: 600,
+        ease: 'Power1',
+        yoyo: true,
+        repeat: -1,
+        delay: 200
+      });
+    }
+    
+    // 下方小hand向下拖动演示
+    if (this.downHand) {
+      this.tweens.add({
+        targets: this.downHand,
+        y: this.downHand.y + 60,
+        alpha: 1,
+        duration: 600,
+        ease: 'Power1',
+        yoyo: true,
+        repeat: -1
+      });
+    }
   }
 
   /**
@@ -442,20 +504,25 @@ export class TutorialScene extends Phaser.Scene {
    */
   createArrow(x, y, direction) {
     // 使用图片资源创建箭头
-    const arrow = this.add.image(x, y, direction === 'up' ? 'arrow_up' : 'arrow_down');
-    arrow.setDepth(50);
-    arrow.setAlpha(0);
+    const arrow = this.add.image(x, y, 'arrow');
+    arrow.setDepth(201);  // 提高深度
+    arrow.setAlpha(1);    // 直接显示
     arrow.setOrigin(0.5);
+    arrow.setScale(0.8);  // 适当缩放
+    // 根据方向翻转箭头
+    if (direction === 'up') {
+      arrow.setFlipY(true);
+    }
     
     // 添加引导拖拽动画
-    // 在中心位置附近做微小的上下振动，提示拖拽方向
+    // 上箭头向上移动100像素，下箭头向下移动100像素
     this.tweens.add({
       targets: arrow,
-      y: direction === 'up' ? y - 5 : y + 5,  // 小幅度振动
-      duration: 500,                           // 动画时长500ms
-      yoyo: true,                              // 往返振动
-      repeat: -1,                              // 无限循环
-      ease: 'Sine.easeInOut'                   // 平滑缓动
+      y: direction === 'up' ? y - 100 : y + 100,  // 大幅度移动
+      duration: 1000,                             // 动画时长1秒
+      yoyo: true,                                 // 往返振动
+      repeat: -1,                                 // 无限循环
+      ease: 'Sine.easeInOut'                      // 平滑缓动
     });
     
     return arrow;
@@ -545,6 +612,46 @@ export class TutorialScene extends Phaser.Scene {
     // 持续检查折叠进度
     if (this.tutorialStarted && !this.foldComplete) {
       this.checkFoldProgress();
+      this.updateHandPosition();
+    }
+  }
+
+  /**
+   * 更新小手位置
+   */
+  updateHandPosition() {
+    if (!this.paperContainer) return;
+    
+    // 获取折叠偏移量
+    const foldOffset = this.paperContainer.foldTop;
+    
+    // 当用户开始折叠时，停止演示动画（小手和箭头都保留显示）
+    if (foldOffset > 5 && this.demoStopped !== true) {
+      this.demoStopped = true;
+      // 停止小手的演示动画
+      if (this.upHand) this.tweens.killTweensOf(this.upHand);
+      if (this.downHand) this.tweens.killTweensOf(this.downHand);
+      // 隐藏提示文字
+      if (this.guideText) {
+        this.tweens.add({
+          targets: this.guideText,
+          alpha: 0,
+          duration: 300
+        });
+      }
+    }
+    
+    // 获取小手初始位置（与 createGuideText 中一致）
+    const centerY = this.cameras.main.centerY;
+    const upHandY = centerY;
+    const downHandY = centerY;
+    
+    // 更新小手位置，跟随折叠
+    if (this.upHand) {
+      this.upHand.y = upHandY - foldOffset;
+    }
+    if (this.downHand) {
+      this.downHand.y = downHandY + foldOffset;
     }
   }
 
