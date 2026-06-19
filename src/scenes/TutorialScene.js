@@ -72,6 +72,9 @@ export class TutorialScene extends Phaser.Scene {
     
     // 加载小手资源
     this.load.image('hand', 'assets/hand.png');
+    
+    // 加载滑动指示线
+    this.load.image('line', 'assets/line.png');
   }
 
   create() {
@@ -450,9 +453,14 @@ export class TutorialScene extends Phaser.Scene {
   startTutorial() {
     this.tutorialStarted = true;
     
+    // 隐藏点击继续提示
+    if (this.clickHint) {
+      this.clickHint.setAlpha(0);
+    }
+    
     // 显示引导提示 - 只显示上方阶段的元素
     this.tweens.add({
-      targets: [this.guideText, this.upArrow, this.upHand],
+      targets: [this.guideText, this.upArrow, this.upHand, this.topLine],
       alpha: 1,
       duration: 500,
       onComplete: () => {
@@ -475,6 +483,23 @@ export class TutorialScene extends Phaser.Scene {
   createGuideText() {
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
+    
+    // 纸张位置
+    const paperX = centerX - PAPER_WIDTH / 2;
+    const paperY = centerY - PAPER_HEIGHT / 2;
+    
+    // 创建上下滑动目标指示线
+    // 上方指示线 - 初始显示，在纸张顶部边缘
+    this.topLine = this.add.image(centerX, paperY, 'line');
+    this.topLine.setDepth(150);
+    this.topLine.setOrigin(0.5);
+    this.topLine.setAlpha(0.8);
+    
+    // 下方指示线 - 初始隐藏，在纸张底部边缘
+    this.bottomLine = this.add.image(centerX, paperY + PAPER_HEIGHT, 'line');
+    this.bottomLine.setDepth(150);
+    this.bottomLine.setOrigin(0.5);
+    this.bottomLine.setAlpha(0);
     
     // 上下拖拽提示（初始提示向上滑）
     this.guideText = this.add.text(centerX, centerY - 120, '向上拖拽打开上眼', {
@@ -644,11 +669,8 @@ export class TutorialScene extends Phaser.Scene {
    * 折叠完成处理
    */
   onFoldComplete() {
-    // 淡出场景并切换到游戏场景
-    this.cameras.main.fadeOut(300, 0, 0, 0);
-    this.cameras.main.once('camerafadeoutcomplete', () => {
-      this.scene.start('GameScene');
-    });
+    // 直接切换到游戏场景，无动画
+    this.scene.start('GameScene');
   }
 
   /**
@@ -710,6 +732,22 @@ export class TutorialScene extends Phaser.Scene {
           this.tweens.add({
             targets: this.upArrow,
             alpha: 0,
+            duration: 300
+          });
+        }
+        
+        // 隐藏上方指示线，显示下方指示线
+        if (this.topLine) {
+          this.tweens.add({
+            targets: this.topLine,
+            alpha: 0,
+            duration: 300
+          });
+        }
+        if (this.bottomLine) {
+          this.tweens.add({
+            targets: this.bottomLine,
+            alpha: 0.8,
             duration: 300
           });
         }
@@ -778,6 +816,15 @@ export class TutorialScene extends Phaser.Scene {
         if (this.downArrow) {
           this.tweens.add({
             targets: this.downArrow,
+            alpha: 0,
+            duration: 300
+          });
+        }
+        
+        // 隐藏下方指示线
+        if (this.bottomLine) {
+          this.tweens.add({
+            targets: this.bottomLine,
             alpha: 0,
             duration: 300
           });
