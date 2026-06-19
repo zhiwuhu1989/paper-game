@@ -110,8 +110,8 @@ export class TutorialScene extends Phaser.Scene {
     // 设置视频深度为最高
     this.introVideo.setDepth(1000);
 
-    // 监听视频播放完成事件（Phaser Video 使用 'ended' 事件）
-    this.introVideo.once('ended', () => {
+    // 监听视频播放完成事件（Phaser Video 使用 'complete' 事件）
+    this.introVideo.once('complete', () => {
       this.videoPlayed = true;
       this.introVideo.destroy();
       this.initTutorial();
@@ -121,22 +121,6 @@ export class TutorialScene extends Phaser.Scene {
     this.introVideo.once('error', () => {
       console.log('视频播放出错');
       this.videoPlayed = true;
-      this.introVideo.destroy();
-      this.initTutorial();
-    });
-
-    // 添加点击跳过功能（防止视频无法自动播放时卡住）
-    const skipButton = this.add.text(screenWidth / 2, screenHeight - 50, '点击跳过', {
-      fontSize: '20px',
-      fontFamily: 'Microsoft YaHei',
-      color: '#ffffff',
-      stroke: '#000000',
-      strokeThickness: 2
-    }).setOrigin(0.5).setDepth(1001).setInteractive();
-
-    skipButton.on('pointerdown', () => {
-      this.videoPlayed = true;
-      skipButton.destroy();
       this.introVideo.destroy();
       this.initTutorial();
     });
@@ -158,7 +142,7 @@ export class TutorialScene extends Phaser.Scene {
 
         playButton.on('pointerdown', () => {
           playButton.destroy();
-          this.introVideo.play(true);
+          this.introVideo.play(false);
         });
       }
     }, 500);
@@ -172,8 +156,8 @@ export class TutorialScene extends Phaser.Scene {
       }
     });
 
-    // 播放视频
-    this.introVideo.play(true);
+    // 播放视频（不循环）
+    this.introVideo.play(false);
   }
 
   /**
