@@ -192,6 +192,9 @@ export class TutorialScene extends Phaser.Scene {
     this.paperContainer.updateMask();
     this.paperContainer.calculateEffectiveRoadMap();
     
+    // 初始只允许向上折叠（分步引导）
+    this.paperContainer.allowedFoldEdges = ['top'];
+    
     // 创建中心白缝效果
     this.createCenterGap();
     
@@ -654,6 +657,9 @@ export class TutorialScene extends Phaser.Scene {
         this.guidePhase = 'bottom';
         this.demoStopped = false; // 重置以便下方小手动画
         
+        // 切换折叠限制为只允许向下折叠
+        this.paperContainer.allowedFoldEdges = ['bottom'];
+        
         // 隐藏上方小手和箭头
         if (this.upHand) {
           this.tweens.add({
@@ -719,6 +725,9 @@ export class TutorialScene extends Phaser.Scene {
       if (foldBottom <= 5 && !this.bottomGuideComplete) {
         this.bottomGuideComplete = true;
         this.guidePhase = 'done';
+        
+        // 解除折叠限制
+        this.paperContainer.allowedFoldEdges = null;
         
         // 隐藏下方小手和箭头
         if (this.downHand) {

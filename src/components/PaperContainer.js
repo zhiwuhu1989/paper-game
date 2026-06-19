@@ -71,6 +71,9 @@ export class PaperContainer extends Phaser.GameObjects.Container {
     this.currentFoldEdge = null;
     this.guideEdge = null;
     this.isMoving = false;
+    
+    // 允许折叠的方向（null 表示所有方向都允许）
+    this.allowedFoldEdges = null;
 
     // 3.1 初始化纸张
     this.initPaper();
@@ -699,6 +702,9 @@ testPaperEdge(p) {
     // 如果规则上不允许折这个角，直接跳过
     if (!this.canFoldCorner(corner)) continue;
 
+    // 如果限制了允许折叠的方向，且当前角不在允许列表中，跳过
+    if (this.allowedFoldEdges && !this.allowedFoldEdges.includes(corner)) continue;
+
     // 获取该角的几何位置（世界坐标）
     const pos = this.getFoldPos(corner);
     if (!pos) continue;
@@ -724,6 +730,9 @@ testPaperEdge(p) {
   for (const edge of edges) {
     // 如果规则上不允许折这条边，直接跳过
     if (!this.canFoldEdge(edge)) continue;
+
+    // 如果限制了允许折叠的方向，且当前边不在允许列表中，跳过
+    if (this.allowedFoldEdges && !this.allowedFoldEdges.includes(edge)) continue;
 
     const pos = this.getFoldPos(edge);
     if (pos == null) continue;
