@@ -289,7 +289,7 @@ export class FrontPaper extends Phaser.GameObjects.Container {
       hiddenRoad.visible = true;
       
       // 绘制道路
-      this.drawHiddenRoad(hiddenRoad);
+      // this.drawHiddenRoad(hiddenRoad);
       
       // 更新道路地图
       if (this.paperContainer) {
