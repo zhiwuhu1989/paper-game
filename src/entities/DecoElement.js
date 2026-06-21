@@ -88,22 +88,68 @@ export class DecoElement extends Phaser.GameObjects.Container {
   }
 
   /**
-   * 执行修复操作：更换为好的纹理
+   * 执行修复操作：更换为好的纹理或播放动画
    */
   doRepair() {
     this.isRepaired = true;
     
-    // 如果配置了 good 纹理，则更换
+    // 如果配置了 good 纹理
     if (this.decoData.good) {
-      this.sprite.setTexture(this.decoData.good);
-      this.sprite.setDisplaySize(this.decoData.width, this.decoData.height);
-      this.sprite.setAlpha(1); // 恢复完全不透明
+      // 检查是否是火堆（通过名称判断）
+      if (this.name === 'broken_fire') {
+        // 火堆修复后播放序列帧动画
+        this.createFireAnimation();
+      } else {
+        // 其他装饰直接更换纹理
+        this.sprite.setTexture(this.decoData.good);
+        this.sprite.setDisplaySize(this.decoData.width, this.decoData.height);
+        this.sprite.setAlpha(1); // 恢复完全不透明
+      }
     }
     
     // 如果配置了 fillRoad，则更新道路地图
     if (this.fillRoad && this.paperContainer) {
       this.paperContainer.fillRoadWithCells(this.fillRoad);
     }
+  }
+
+  /**
+   * 创建火堆动画
+   */
+  createFireAnimation() {
+    // 移除旧的静态精灵
+    this.sprite.destroy();
+    
+    // 加载序列帧（default_0005 到 default_0095，共19帧）
+    const frameCount = 19;
+    const frames = [];
+    
+    for (let i = 0; i < frameCount; i++) {
+      const frameNum = String(5 + i * 5).padStart(4, '0');
+      const textureKey = `fire_anim_${frameNum}`;
+      
+      if (this.scene.textures.exists(textureKey)) {
+        frames.push({ key: textureKey });
+      }
+    }
+    
+    // 创建动画精灵
+    this.sprite = this.scene.add.sprite(0, 0, frames[0]?.key || this.decoData.good).setOrigin(0.5, 0.5);
+    this.sprite.setDisplaySize(this.decoData.width, this.decoData.height);
+    this.add(this.sprite);
+    
+    // 定义并播放动画
+    if (frames.length > 0 && !this.scene.anims.exists('fire_anim')) {
+      this.scene.anims.create({
+        key: 'fire_anim',
+        frames: frames,
+        frameRate: 12, // 每秒15帧
+        repeat: -1,    // 无限循环
+        yoyo: false
+      });
+    }
+    
+    this.sprite.anims.play('fire_anim');
   }
 
   /**

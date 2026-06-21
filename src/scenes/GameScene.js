@@ -85,6 +85,12 @@ export class GameScene extends Phaser.Scene {
     
     // 加载 part_2 视频
     this.load.video('part_2_video', 'assets/video/part_2.mp4', false);
+    
+    // 加载火堆序列帧动画（default_0005 到 default_0095，共19帧）
+    for (let i = 0; i < 19; i++) {
+      const frameNum = String(5 + i * 5).padStart(4, '0');
+      this.load.image(`fire_anim_${frameNum}`, `assets/fire/default_${frameNum}.png`);
+    }
   }
 
   create() {

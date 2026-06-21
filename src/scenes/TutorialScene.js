@@ -49,6 +49,12 @@ export class TutorialScene extends Phaser.Scene {
     this.load.image('fire_1_0', 'assets/fire_1_0.png');
     this.load.image('fire_1_1', 'assets/fire_1_1.png');
     
+    // 加载火堆序列帧动画（default_0005 到 default_0095，共19帧）
+    for (let i = 0; i < 19; i++) {
+      const frameNum = String(5 + i * 5).padStart(4, '0');
+      this.load.image(`fire_anim_${frameNum}`, `assets/fire/default_${frameNum}.png`);
+    }
+    
     // 加载装饰资源
     this.load.image('tree_1', 'assets/tree_1.png');
     this.load.image('tree_2', 'assets/tree_2.png');
