@@ -20,7 +20,7 @@ export class PuzzleScene extends Phaser.Scene {
   }
 
   init(data) {
-    this.textureKey = data.textureKey || 'paper_1';  // 拼图使用的图片
+    this.textureKey = data.textureKey || 'puzzle';  // 拼图使用的图片，默认使用 puzzle.png
     this.onComplete = data.onComplete || null;        // 完成回调
   }
 
@@ -145,21 +145,6 @@ export class PuzzleScene extends Phaser.Scene {
           startX + col * this.cropWidth,
           startY + row * this.cropHeight
         );
-
-        // 调试：给容器添加背景颜色
-        const bgColor = 0x333333; // 深灰色背景
-        const bg = this.add.rectangle(0, 0, this.cropWidth, this.cropHeight, bgColor, 0.5);
-        pieceContainer.add(bg);
-
-        // 调试：添加编号文字
-        const indexText = this.add.text(0, 0, `${index}`, {
-          fontSize: '32px',
-          fontFamily: 'Arial',
-          color: '#ff0000',
-          stroke: '#ffffff',
-          strokeThickness: 2
-        }).setOrigin(0.5, 0.5);
-        pieceContainer.add(indexText);
 
         // 创建碎片图片：从原图裁剪出对应区域，并以原图尺寸显示
         const pieceImage = this.add.image(

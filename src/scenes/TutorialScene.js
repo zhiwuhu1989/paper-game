@@ -236,9 +236,6 @@ export class TutorialScene extends Phaser.Scene {
     // 设置用户交互以启用音频（浏览器自动播放限制）
     this.setupAudioUnlock();
     
-    // 显示对话框
-    this.showDialogue();
-    
     // 设置拖拽监听
     this.setupDragListener();
     
@@ -247,6 +244,10 @@ export class TutorialScene extends Phaser.Scene {
     
     // 初始化鼠标输入
     this.initInput();
+    
+    // 直接开始折纸引导，跳过对话
+    this.dialogueComplete = true;
+    this.time.delayedCall(500, () => this.startTutorial());
   }
 
   /**
