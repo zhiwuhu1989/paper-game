@@ -7,6 +7,10 @@ export class DialogueBox {
     this.dialogues = [];
     this.currentIndex = 0;
     this.onComplete = null;
+    
+    // 角色立绘
+    this.profileLeft = null;   // 左侧立绘（主角）
+    this.profileRight = null;   // 右侧立绘（NPC）
 
     this.createUI();
   }
@@ -16,57 +20,88 @@ export class DialogueBox {
     const camera = this.scene.cameras.main;
     const cameraWidth = camera.width;
     const cameraHeight = camera.height;
+
+    // 对话框背景图片 - 使用原始尺寸
+    this.dialogBg = this.scene.add.image(cameraWidth / 2, cameraHeight - 80, 'dialog_bg');
+    this.dialogBg.setOrigin(0.5, 0.5);
+    this.dialogBg.setScrollFactor(0);
+    this.dialogBg.setDepth(2000);
+    // 使用原始尺寸，不缩放
+    this.dialogBg.setScale(1);
+
+    // 获取对话框实际尺寸
+    const boxWidth = this.dialogBg.width;
+    const boxHeight = this.dialogBg.height;
+    const boxX = this.dialogBg.x - boxWidth / 2;
+    const boxY = this.dialogBg.y - boxHeight / 2;
+
+    // 说话者名称背景 - 使用原始尺寸
+    const speakerBgX = boxX + 40;
+    const speakerBgY = boxY + 5;  // 下移5像素
     
-    const boxWidth = cameraWidth * 0.8;
-    const boxHeight = 120;
-    const boxX = (cameraWidth - boxWidth) / 2;
-    const boxY = cameraHeight - boxHeight - 20;
+    const speakerCenterX = speakerBgX + this.dialogBg.width * 0.15;
+    
+    this.speakerBg = this.scene.add.image(speakerCenterX, speakerBgY, 'dialog_speaker');
+    this.speakerBg.setOrigin(0.5, 0.5);
+    this.speakerBg.setScrollFactor(0);
+    this.speakerBg.setDepth(2000);
+    // 使用原始尺寸，不缩放
+    this.speakerBg.setScale(1);
 
-    // Background box
-    this.bg = this.scene.add.graphics();
-    this.bg.setScrollFactor(0);
-    this.bg.setDepth(2000);
-    this.bg.fillStyle(0x000000, 0.85);
-    this.bg.fillRoundedRect(boxX, boxY, boxWidth, boxHeight, 12);
-    this.bg.lineStyle(2, 0xffffff, 0.6);
-    this.bg.strokeRoundedRect(boxX, boxY, boxWidth, boxHeight, 12);
-
-    // Speaker name
-    this.speakerText = this.scene.add.text(boxX + 16, boxY + 12, '', {
-      fontSize: '14px',
-      fontFamily: 'Arial',
-      fontStyle: 'bold',
-      color: '#ffcc00',
-      stroke: '#000000',
-      strokeThickness: 2
-    }).setScrollFactor(0).setDepth(2001);
-
-    // Dialogue text
-    this.dialogueText = this.scene.add.text(boxX + 16, boxY + 36, '', {
+    // 说话者名称文字（美术效果图中的棕色文字）
+    this.speakerText = this.scene.add.text(speakerCenterX, speakerBgY, '', {
       fontSize: '16px',
-      fontFamily: 'Arial',
-      color: '#ffffff',
-      wordWrap: { width: boxWidth - 32 },
-      lineSpacing: 4
+      fontFamily: 'Microsoft YaHei',
+      fontStyle: 'bold',
+      color: '#8B5A2B',
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(2001);
+
+    // 对话文本（美术效果图中的棕色文字）
+    const textPadding = 40;
+    this.dialogueText = this.scene.add.text(boxX + textPadding, boxY + 25, '', {
+      fontSize: '20px',
+      fontFamily: 'Microsoft YaHei',
+      color: '#6B4423',
+      wordWrap: { width: boxWidth - textPadding * 2 },
+      lineSpacing: 12
     }).setScrollFactor(0).setDepth(2001);
 
-    // Continue hint
-    this.hintText = this.scene.add.text(boxX + boxWidth - 16, boxY + boxHeight - 16, '点击继续 ▶', {
-      fontSize: '12px',
-      fontFamily: 'Arial',
-      color: '#aaaaaa'
-    }).setOrigin(1, 1).setScrollFactor(0).setDepth(2001);
+    // 继续提示三角形（使用原始尺寸）
+    this.hintTriangle = this.scene.add.image(boxX + boxWidth - 35, boxY + boxHeight - 15, 'dialog_triangle');
+    this.hintTriangle.setScrollFactor(0);
+    this.hintTriangle.setDepth(2001);
+    // 使用原始尺寸，不缩放
+    this.hintTriangle.setScale(1);
 
-    // Blink animation for hint
+    // 闪烁动画
     this.scene.tweens.add({
-      targets: this.hintText,
-      alpha: { from: 1, to: 0.3 },
+      targets: this.hintTriangle,
+      alpha: { from: 1, to: 0.4 },
       duration: 800,
       yoyo: true,
       repeat: -1
     });
 
-    // Click zone (covers the dialogue box area)
+    // 立绘容器（使用原始尺寸，不缩放）
+    // 左侧立绘（主角）- 与说话者底居中对齐
+    this.profileLeft = this.scene.add.image(speakerCenterX, boxY, 'profile_picture_1');
+    this.profileLeft.setOrigin(0.5, 1);
+    this.profileLeft.setScrollFactor(0);
+    this.profileLeft.setDepth(1999);
+    // 使用原始尺寸，不缩放
+    this.profileLeft.setScale(1);
+    this.profileLeft.setAlpha(0);
+
+    // 右侧立绘（NPC）- 调整到对话框上方偏右位置，左移并下移
+    this.profileRight = this.scene.add.image(boxX + boxWidth - 80, boxY + 15, 'profile_picture_2');
+    this.profileRight.setOrigin(0.5, 1);
+    this.profileRight.setScrollFactor(0);
+    this.profileRight.setDepth(1999);
+    // 使用原始尺寸，不缩放
+    this.profileRight.setScale(1);
+    this.profileRight.setAlpha(0);
+
+    // Click zone
     this.clickZone = this.scene.add.zone(boxX, boxY, boxWidth, boxHeight)
       .setOrigin(0, 0)
       .setInteractive()
@@ -87,12 +122,12 @@ export class DialogueBox {
     this.onComplete = onComplete;
     this.isActive = true;
 
-    this.bg.setVisible(true);
+    this.dialogBg.setVisible(true);
+    this.speakerBg.setVisible(true);
     this.speakerText.setVisible(true);
     this.dialogueText.setVisible(true);
-    this.hintText.setVisible(true);
+    this.hintTriangle.setVisible(true);
     
-    // 检查 clickZone 是否存在
     if (this.clickZone && this.clickZone.setInteractive) {
       this.clickZone.setInteractive();
     }
@@ -102,12 +137,16 @@ export class DialogueBox {
 
   hide() {
     this.isActive = false;
-    this.bg.setVisible(false);
+    this.dialogBg.setVisible(false);
+    this.speakerBg.setVisible(false);
     this.speakerText.setVisible(false);
     this.dialogueText.setVisible(false);
-    this.hintText.setVisible(false);
+    this.hintTriangle.setVisible(false);
     
-    // 检查 clickZone 是否存在
+    // 隐藏立绘
+    if (this.profileLeft) this.profileLeft.setAlpha(0);
+    if (this.profileRight) this.profileRight.setAlpha(0);
+    
     if (this.clickZone && this.clickZone.disableInteractive) {
       this.clickZone.disableInteractive();
     }
@@ -120,27 +159,28 @@ export class DialogueBox {
     }
 
     const dialogue = this.dialogues[this.currentIndex];
-    let speakerName, speakerColor;
+    let speakerName;
     
     if (dialogue.speaker === 'npc') {
       speakerName = this.speakerNames.npc || 'NPC';
-      speakerColor = '#00ccff';
     } else if (dialogue.speaker === 'system') {
       speakerName = this.speakerNames.system || '系统';
-      speakerColor = '#ff6666';
     } else {
       speakerName = this.speakerNames.player || '你';
-      speakerColor = '#ffcc00';
     }
 
-    this.speakerText.setText(`【${speakerName}】`);
-    this.speakerText.setColor(speakerColor);
+    this.speakerText.setText(speakerName);
     this.dialogueText.setText(dialogue.text);
 
-    if (this.currentIndex >= this.dialogues.length - 1) {
-      this.hintText.setText('点击结束 ■');
+    // 根据说话者显示立绘
+    if (dialogue.speaker === 'npc') {
+      // NPC 说话时显示右侧立绘
+      this.profileLeft.setAlpha(0);
+      this.profileRight.setAlpha(1);
     } else {
-      this.hintText.setText('点击继续 ▶');
+      // 主角或其他人说话时显示左侧立绘
+      this.profileLeft.setAlpha(1);
+      this.profileRight.setAlpha(0);
     }
   }
 

@@ -33,7 +33,7 @@ export class TutorialScene extends Phaser.Scene {
 
   preload() {
     // 加载引导视频
-    this.load.video('intro_video', 'assets/video.mp4', true); // true = 无音频，允许自动播放
+    this.load.video('intro_video', 'assets/video/part_1.mp4', false); // false = 有音频
 
     // 加载纸张相关资源（使用正式背景资源，使用唯一键名避免冲突）
     this.load.image('tutorial_back', 'assets/bg_2_0.png');   // 背面纸张
@@ -99,19 +99,13 @@ export class TutorialScene extends Phaser.Scene {
     // 设置视频原点为中心
     this.introVideo.setOrigin(0.5);
 
-    // 限制视频最大尺寸为 600x600
-    const maxSize = 600;
-    const videoWidth = this.introVideo.width || maxSize;
-    const videoHeight = this.introVideo.height || maxSize;
-
-    // 计算缩放比例，限制在 600x600 内
-    const scaleX = maxSize / videoWidth;
-    const scaleY = maxSize / videoHeight;
-    const scale = Math.min(scaleX, scaleY, 1); // 不超过原始尺寸
-    this.introVideo.setScale(scale);
-
     // 设置视频深度为最高
     this.introVideo.setDepth(1000);
+
+    // 视频加载完成后设置尺寸为 600x600
+    this.introVideo.on('created', () => {
+      this.introVideo.setDisplaySize(600, 600);
+    });
 
     // 监听视频播放完成事件（Phaser Video 使用 'complete' 事件）
     this.introVideo.once('complete', () => {

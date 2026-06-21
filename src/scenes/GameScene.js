@@ -59,6 +59,19 @@ export class GameScene extends Phaser.Scene {
     this.load.image('npc_1', 'assets/npc_1.png');
     this.load.image('npc_2', 'assets/npc_2.png');
     this.load.image('npc_3', 'assets/npc_3.png');
+    
+    // 加载对话框资源
+    this.load.image('dialog_bg', 'assets/dialog_bg.png');
+    this.load.image('dialog_speaker', 'assets/dialog_speaker.png');
+    this.load.image('dialog_triangle', 'assets/dialog_triangle.png');
+    
+    // 加载立绘资源
+    this.load.image('profile_picture_1', 'assets/profile_picture_1.png');
+    this.load.image('profile_picture_2', 'assets/profile_picture_2.png');
+    
+    // 加载 NPC 头顶标记
+    this.load.image('mark', 'assets/mark.png');
+    
     // 加载玩家序列帧（7个独立图片）
     for (let i = 1; i <= 7; i++) {
       this.load.image(`player_frame_${i}`, `assets/player/${i}.png`);
@@ -587,7 +600,7 @@ export class GameScene extends Phaser.Scene {
             npc.questCompleted = true;
             if (npc.reward && !npc.hasGivenReward) {
               npc.hasGivenReward = true;
-              npc.hideIndicator();
+              npc.hideMark();
               this.inventory.addItem(npc.reward);
               this.toast.show(`获得物品：${npc.reward.name}`, 3000, '#ffdd44');
             }
@@ -599,7 +612,7 @@ export class GameScene extends Phaser.Scene {
           // 没有任务要求，直接给奖励
           if (npc.reward && !npc.hasGivenReward) {
             npc.hasGivenReward = true;
-            npc.hideIndicator();
+            npc.hideMark();
             this.inventory.addItem(npc.reward);
             this.toast.show(`获得物品：${npc.reward.name}`, 3000, '#ffdd44');
           }

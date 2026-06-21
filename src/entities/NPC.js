@@ -36,39 +36,24 @@ export class NPC extends Phaser.GameObjects.Container {
     this.npcSprite = scene.add.image(0, 0, texture).setOrigin(0.5, 1); // 原点设置在底部中心
     this.npcSprite.setDisplaySize(width, height);
 
-    // // NPC label
-    // this.label = scene.add.text(0, -CELL_SIZE * 0.8 - 8, this.name, {
-    //   fontSize: '12px',
-    //   fontFamily: 'Arial',
-    //   color: '#ffffff',
-    //   stroke: '#000000',
-    //   strokeThickness: 3,
-    //   align: 'center'
-    // }).setOrigin(0.5, 1);
+    // NPC 头顶标记（用于显示任务提示）
+    this.markSprite = scene.add.image(0, -height - 15, 'mark').setOrigin(0.5, 0.5);
+    this.markSprite.setScale(0.8);
+    this.markSprite.setVisible(true);
 
-    // // Exclamation mark indicator (shows quest available)
-    // this.indicator = scene.add.text(0, -CELL_SIZE * 0.8 - 22, '!', {
-    //   fontSize: '16px',
-    //   fontFamily: 'Arial',
-    //   fontStyle: 'bold',
-    //   color: '#ffff00',
-    //   stroke: '#000000',
-    //   strokeThickness: 3
-    // }).setOrigin(0.5, 1);
+    // 标记闪烁动画
+    scene.tweens.add({
+      targets: this.markSprite,
+      y: this.markSprite.y - 5,
+      duration: 600,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Power1'
+    });
 
     // 将所有元素添加到容器中
     this.add(this.npcSprite);
-    // this.add(this.label);
-    // this.add(this.indicator);
-
-    // Bounce animation for indicator
-    // scene.tweens.add({
-    //   targets: this.indicator,
-    //   y: this.indicator.y - 5,
-    //   duration: 500,
-    //   yoyo: true,
-    //   repeat: -1
-    // });
+    this.add(this.markSprite);
   }
 
   isAdjacentTo(playerTile) {
@@ -81,8 +66,25 @@ export class NPC extends Phaser.GameObjects.Container {
     return playerTile.x === this.tile.x && playerTile.y === this.tile.y;
   }
 
-  hideIndicator() {
-    // this.indicator.setVisible(false);
+  hideMark() {
+    if (this.markSprite) {
+      this.scene.tweens.killTweensOf(this.markSprite);
+      this.markSprite.setVisible(false);
+    }
+  }
+
+  showMark() {
+    if (this.markSprite) {
+      this.markSprite.setVisible(true);
+      this.scene.tweens.add({
+        targets: this.markSprite,
+        y: this.markSprite.y - 5,
+        duration: 600,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Power1'
+      });
+    }
   }
 
   getSprite() {
@@ -91,8 +93,7 @@ export class NPC extends Phaser.GameObjects.Container {
 
   destroy() {
     this.npcSprite.destroy();
-    // this.label.destroy();
-    // this.indicator.destroy();
+    if (this.markSprite) this.markSprite.destroy();
     super.destroy();
   }
 }
