@@ -76,6 +76,12 @@ export class GameScene extends Phaser.Scene {
     for (let i = 1; i <= 7; i++) {
       this.load.image(`player_frame_${i}`, `assets/player/${i}.png`);
     }
+    
+    // 加载正面纸张序列帧动画（default_0005 到 default_0240，共48帧）
+    for (let i = 0; i < 48; i++) {
+      const frameNum = String(5 + i * 5).padStart(4, '0'); // 从 0005 开始
+      this.load.image(`bg_default_${frameNum}`, `assets/bg/default_${frameNum}.png`);
+    }
   }
 
   create() {

@@ -94,10 +94,8 @@ export class FrontPaper extends Phaser.GameObjects.Container {
     this.bottomContainer = this.scene.add.container(0, 0);
     this.bottomContainer.setSize(PAPER_WIDTH, PAPER_HEIGHT);
 
-    const frontImg = this.scene.add.image(0, 0, this.paperContainer.paperData.frontPaper).setOrigin(0, 0);
-    frontImg.setDisplaySize(PAPER_WIDTH, PAPER_HEIGHT);
-    this.bottomContainer.add(frontImg);
-    frontImg.setDepth(1);
+    // 尝试创建序列动画，如果序列帧纹理不可用则回退到静态图片
+    this.createFrontPaperBackground();
 
     this.elementContainer = this.scene.add.container(0, 0);
     this.elementContainer.setSize(PAPER_WIDTH, PAPER_HEIGHT);
@@ -107,6 +105,74 @@ export class FrontPaper extends Phaser.GameObjects.Container {
 
     this.add(this.bottomContainer);
     this.add(this.elementContainer);
+  }
+
+  /**
+   * 创建正面纸张背景（支持序列动画和静态图片两种模式）
+   */
+  createFrontPaperBackground() {
+    const paperData = this.paperContainer.paperData;
+    
+    // 检查序列帧纹理是否可用（检查第一帧）
+    const hasAnimationFrames = this.scene.textures.exists('bg_default_0005');
+    
+    if (hasAnimationFrames) {
+      // 使用序列动画
+      this.createFrontPaperAnimation();
+    } else {
+      // 使用静态图片
+      const frontImg = this.scene.add.image(0, 0, paperData.frontPaper).setOrigin(0, 0);
+      frontImg.setDisplaySize(PAPER_WIDTH, PAPER_HEIGHT);
+      this.bottomContainer.add(frontImg);
+      frontImg.setDepth(1);
+    }
+  }
+
+  /**
+   * 创建正面纸张序列动画
+   */
+  createFrontPaperAnimation() {
+    // 加载序列帧纹理（default_0005 到 default_0240，共48帧）
+    const frameCount = 48;
+    const frames = [];
+    
+    for (let i = 0; i < frameCount; i++) {
+      const frameNum = String(5 + i * 5).padStart(4, '0'); // 从 0005 开始
+      const textureKey = `bg_default_${frameNum}`;
+      
+      if (this.scene.textures.exists(textureKey)) {
+        frames.push({ key: textureKey });
+      }
+    }
+    
+    // 确保有足够的帧
+    if (frames.length === 0) {
+      // 回退到静态图片
+      const frontImg = this.scene.add.image(0, 0, this.paperContainer.paperData.frontPaper).setOrigin(0, 0);
+      frontImg.setDisplaySize(PAPER_WIDTH, PAPER_HEIGHT);
+      this.bottomContainer.add(frontImg);
+      frontImg.setDepth(1);
+      return;
+    }
+    
+    // 创建精灵并播放动画（使用第一帧作为初始纹理）
+    this.frontPaperSprite = this.scene.add.sprite(0, 0, frames[0].key).setOrigin(0, 0);
+    this.frontPaperSprite.setDisplaySize(PAPER_WIDTH, PAPER_HEIGHT);
+    this.bottomContainer.add(this.frontPaperSprite);
+    this.frontPaperSprite.setDepth(1);
+    
+    // 定义并播放动画
+    if (!this.scene.anims.exists('front_paper_anim')) {
+      this.scene.anims.create({
+        key: 'front_paper_anim',
+        frames: frames,
+        frameRate: 6, // 每秒12帧（调慢2倍）
+        repeat: -1,    // 无限循环
+        yoyo: false    // 不往返播放
+      });
+    }
+    
+    this.frontPaperSprite.anims.play('front_paper_anim');
   }
 
   /**
