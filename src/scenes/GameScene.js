@@ -82,6 +82,9 @@ export class GameScene extends Phaser.Scene {
       const frameNum = String(5 + i * 5).padStart(4, '0'); // 从 0005 开始
       this.load.image(`bg_default_${frameNum}`, `assets/bg/default_${frameNum}.png`);
     }
+    
+    // 加载 part_2 视频
+    this.load.video('part_2_video', 'assets/video/part_2.mp4', false);
   }
 
   create() {
@@ -673,14 +676,10 @@ export class GameScene extends Phaser.Scene {
       this.inventory.removeItem(house.requiredKey);
       this.toast.show(house.config.unlockedMessage, 4000, '#44ff44');
       
-      // 解锁后立即开始探索
-      this.dialogueBox.show(
-        [{ speaker: 'narrator', text: '你推开了小屋的门...' }],
-        { narrator: '旁白' },
-        () => {
-          this.exploreHouse(house);
-        }
-      );
+      // 播放 part_2 视频，视频播完后直接进入拼图游戏
+      this.playPart2Video(() => {
+        this.startPuzzleGame();
+      });
     } else {
       // No key
       // 弹出对话框提示需要找钥匙（点击继续形式）
@@ -733,6 +732,79 @@ export class GameScene extends Phaser.Scene {
   }
 
   /**
+   * 播放 part_2 视频
+   * @param {Function} callback - 视频播放完成后的回调函数
+   */
+  playPart2Video(callback) {
+    // 设置黑色背景
+    this.cameras.main.setBackgroundColor('#000000');
+    
+    const screenWidth = this.cameras.main.width;
+    const screenHeight = this.cameras.main.height;
+    
+    this.part2Video = this.add.video(screenWidth / 2, screenHeight / 2, 'part_2_video');
+    this.part2Video.setOrigin(0.5);
+    this.part2Video.setDepth(1000);
+    
+    // 视频加载完成后设置尺寸为 600x600
+    this.part2Video.on('created', () => {
+      this.part2Video.setDisplaySize(600, 600);
+    });
+    
+    // 监听视频播放完成事件
+    this.part2Video.once('complete', () => {
+      this.part2Video.destroy();
+      // 恢复原来的背景
+      this.cameras.main.setBackgroundColor('rgba(0, 0, 0, 0)');
+      if (callback) {
+        callback();
+      }
+    });
+    
+    // 监听视频加载错误
+    this.part2Video.once('error', () => {
+      this.part2Video.destroy();
+      // 恢复原来的背景
+      this.cameras.main.setBackgroundColor('rgba(0, 0, 0, 0)');
+      if (callback) {
+        callback();
+      }
+    });
+    
+    // 处理浏览器自动播放限制
+    let playButton = null;
+    const playTimeout = setTimeout(() => {
+      if (!this.part2Video.isPlaying()) {
+        playButton = this.add.text(screenWidth / 2, screenHeight / 2, '▶ 点击播放', {
+          fontSize: '32px',
+          fontFamily: 'Microsoft YaHei',
+          color: '#ffffff',
+          backgroundColor: '#444',
+          padding: { x: 20, y: 10 },
+          stroke: '#000000',
+          strokeThickness: 2
+        }).setOrigin(0.5).setDepth(1001).setInteractive();
+
+        playButton.on('pointerdown', () => {
+          playButton.destroy();
+          this.part2Video.play(false);
+        });
+      }
+    }, 500);
+    
+    this.part2Video.once('playing', () => {
+      clearTimeout(playTimeout);
+      if (playButton) {
+        playButton.destroy();
+        playButton = null;
+      }
+    });
+    
+    // 播放视频（false = 不循环）
+    this.part2Video.play(false);
+  }
+
+  /**
    * 启动拼图游戏
    */
   startPuzzleGame() {
@@ -741,7 +813,7 @@ export class GameScene extends Phaser.Scene {
     
     // 启动拼图场景（使用 launch 而不是 start，保持 GameScene 实例）
     this.scene.launch('PuzzleScene', {
-      textureKey: 'paper_1',
+      textureKey: 'puzzle',
       onComplete: () => {
         // 拼图完成回调 - 先唤醒场景
         this.scene.wake('GameScene');
