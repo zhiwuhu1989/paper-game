@@ -739,10 +739,13 @@ export class GameScene extends Phaser.Scene {
     // 设置黑色背景
     this.cameras.main.setBackgroundColor('#000000');
     
-    const screenWidth = this.cameras.main.width;
-    const screenHeight = this.cameras.main.height;
+    // 获取当前纸张的位置，视频需要与纸张对齐
+    const paperX = this.currentPaper.x;
+    const paperY = this.currentPaper.y;
+    const paperCenterX = paperX + PAPER_WIDTH / 2;
+    const paperCenterY = paperY + PAPER_HEIGHT / 2;
     
-    this.part2Video = this.add.video(screenWidth / 2, screenHeight / 2, 'part_2_video');
+    this.part2Video = this.add.video(paperCenterX, paperCenterY, 'part_2_video');
     this.part2Video.setOrigin(0.5);
     this.part2Video.setDepth(1000);
     
