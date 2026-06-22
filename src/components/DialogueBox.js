@@ -105,10 +105,9 @@ export class DialogueBox {
     this.profileRight.setScale(1);
     this.profileRight.setAlpha(0);
 
-    // Click zone
-    this.clickZone = this.scene.add.zone(boxX, boxY, boxWidth, boxHeight)
+    // 点击任意区域推进对话（全屏 zone）
+    this.clickZone = this.scene.add.zone(0, 0, cameraWidth, cameraHeight)
       .setOrigin(0, 0)
-      .setInteractive()
       .setScrollFactor(0)
       .setDepth(2002);
 
