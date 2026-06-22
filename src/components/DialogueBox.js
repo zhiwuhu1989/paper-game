@@ -71,7 +71,7 @@ export class DialogueBox {
     }).setScrollFactor(0).setDepth(2001);
 
     // 继续提示三角形（使用原始尺寸）
-    this.hintTriangle = this.scene.add.image(boxX + boxWidth - 45, boxY + boxHeight - 15, 'dialog_triangle');
+    this.hintTriangle = this.scene.add.image(boxX + boxWidth - 45, boxY + boxHeight - 20, 'dialog_triangle');
     this.hintTriangle.setScrollFactor(0);
     this.hintTriangle.setDepth(2001);
     // 使用原始尺寸，不缩放

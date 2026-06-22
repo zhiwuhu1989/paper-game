@@ -7,8 +7,8 @@ export class Toast {
     this.isShowing = false;
   }
 
-  show(message, duration = 2500, color = '#ffffff') {
-    this.queue.push({ message, duration, color });
+  show(message, duration = 2500, color = '#ffffff', iconKey = null) {
+    this.queue.push({ message, duration, color, iconKey });
     if (!this.isShowing) {
       this.showNext();
     }
@@ -28,7 +28,7 @@ export class Toast {
     }
 
     this.isShowing = true;
-    const { message, duration, color } = this.queue.shift();
+    const { message, duration, color, iconKey } = this.queue.shift();
 
     const camera = this.scene.cameras.main;
     const centerX = camera.width / 2;
@@ -36,20 +36,39 @@ export class Toast {
 
     const maxTextWidth = PAPER_WIDTH * 0.8;
 
-    const text = this.scene.add.text(centerX, centerY, message, {
+    const text = this.scene.add.text(0, 0, message, {
       fontSize: '16px',
       fontFamily: 'Arial',
       color: color,
-      stroke: '#000000',
-      strokeThickness: 4,
       align: 'center',
       wordWrap: { width: maxTextWidth }
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(3001);
+    }).setOrigin(0.5);
 
-    const bounds = text.getBounds();
+    let icon = null;
+    let contentWidth = text.width;
+    let contentHeight = text.height;
+
+    if (iconKey) {
+      icon = this.scene.add.image(0, 0, iconKey);
+      icon.setDisplaySize(24, 24);
+      contentWidth = text.width + icon.displayWidth + 8;
+      contentHeight = Math.max(text.height, icon.displayHeight);
+    }
+
+    // 水平居中排列内容
+    const startX = centerX - contentWidth / 2;
+    if (icon) {
+      icon.setPosition(startX + icon.displayWidth / 2, centerY);
+      icon.setScrollFactor(0).setDepth(3001);
+      text.setPosition(startX + icon.displayWidth + 8 + text.width / 2, centerY);
+    } else {
+      text.setPosition(centerX, centerY);
+    }
+    text.setScrollFactor(0).setDepth(3001);
+
     const pad = 12;
-    const bgWidth = Math.max(bounds.width + pad * 2, 120);
-    const bgHeight = bounds.height + pad * 2;
+    const bgWidth = Math.max(contentWidth + pad * 2, 120);
+    const bgHeight = contentHeight + pad * 2;
 
     // 使用 dialog_bubble 九宫格底图，避免拉伸变形
     const bg = this.scene.add.nineslice(
@@ -65,21 +84,26 @@ export class Toast {
     // Fade in
     bg.setAlpha(0);
     text.setAlpha(0);
+    if (icon) icon.setAlpha(0);
+
+    const targets = [bg, text];
+    if (icon) targets.push(icon);
 
     this.scene.tweens.add({
-      targets: [bg, text],
+      targets,
       alpha: 1,
       duration: 300,
       onComplete: () => {
         // Hold then fade out
         this.scene.time.delayedCall(duration, () => {
           this.scene.tweens.add({
-            targets: [bg, text],
+            targets,
             alpha: 0,
             duration: 400,
             onComplete: () => {
               bg.destroy();
               text.destroy();
+              if (icon) icon.destroy();
               this.showNext();
             }
           });

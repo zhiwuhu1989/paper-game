@@ -90,6 +90,9 @@ export class GameScene extends Phaser.Scene {
     // 加载背景音乐
     this.load.audio('bgm', 'assets/audio/bgm.mp3');
     
+    // 加载钥匙图标
+    this.load.image('key', 'assets/key.png');
+    
     // 加载火堆序列帧动画（default_0005 到 default_0095，共19帧）
     for (let i = 0; i < 19; i++) {
       const frameNum = String(5 + i * 5).padStart(4, '0');
@@ -631,11 +634,15 @@ export class GameScene extends Phaser.Scene {
               npc.hasGivenReward = true;
               npc.hideMark();
               this.inventory.addItem(npc.reward);
-              this.toast.show(`获得物品：${npc.reward.name}`, 3000, '#ffdd44');
+              if (npc.reward.id === 'house_key') {
+                this.toast.show('已获得', 3000, '#8B5A2B', 'key');
+              } else {
+                this.toast.show(`获得物品：${npc.reward.name}`, 3000, '#6B4423');
+              }
             }
           } else {
             // 任务未完成，提示玩家
-            this.toast.show('请先完成任务再回来领取奖励！', 2500, '#ffaa00');
+            this.toast.show('请先完成任务再回来领取奖励！', 2500, '#6B4423');
           }
         } else {
           // 没有任务要求，直接给奖励
@@ -643,7 +650,11 @@ export class GameScene extends Phaser.Scene {
             npc.hasGivenReward = true;
             npc.hideMark();
             this.inventory.addItem(npc.reward);
-            this.toast.show(`获得物品：${npc.reward.name}`, 3000, '#ffdd44');
+            if (npc.reward.id === 'house_key') {
+              this.toast.show('已获得', 3000, '#8B5A2B', 'key');
+            } else {
+              this.toast.show(`获得物品：${npc.reward.name}`, 3000, '#6B4423');
+            }
           }
         }
       }
@@ -694,7 +705,7 @@ export class GameScene extends Phaser.Scene {
       // Has key - unlock!
       house.unlock();
       this.inventory.removeItem(house.requiredKey);
-      this.toast.show(house.config.unlockedMessage, 4000, '#44ff44');
+      this.toast.show(house.config.unlockedMessage, 4000, '#6B4423');
       
       // 播放 part_2 视频，视频播完后直接进入拼图游戏
       this.playPart2Video(() => {
@@ -874,7 +885,7 @@ export class GameScene extends Phaser.Scene {
       this.inventory.addItem(fragment);
     }
     
-    this.toast.show('地图碎片已拼好！', 3000, '#44ff44');
+    this.toast.show('地图碎片已拼好！', 3000, '#6B4423');
     
     // 使用 scene.time.delayedCall 确保在场景上下文中执行
     this.time.delayedCall(500, () => {
@@ -900,7 +911,7 @@ export class GameScene extends Phaser.Scene {
           if (paper.frontPaper.hideDecoElement) {
             paper.frontPaper.hideDecoElement('paper_1');
           }
-          this.toast.show('发现了一条隐藏的道路！', 3000, '#44ff44');
+          this.toast.show('发现了一条隐藏的道路！', 3000, '#6B4423');
           break;
         }
       }

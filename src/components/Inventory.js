@@ -4,6 +4,7 @@ export class Inventory {
   constructor(scene) {
     this.scene = scene;
     this.items = [];
+    this.itemIcons = [];
 
     this.createUI();
   }
@@ -31,7 +32,7 @@ export class Inventory {
       fontStyle: 'bold'
     }).setScrollFactor(0).setDepth(1501);
 
-    // Items text
+    // Items text（备用，空状态时显示）
     this.itemsText = this.scene.add.text(panelX + 8, panelY + 22, '（空）', {
       fontSize: '11px',
       fontFamily: 'Arial',
@@ -63,21 +64,65 @@ export class Inventory {
   }
 
   updateDisplay() {
-    // 检查 itemsText 是否存在（场景可能处于 sleep 状态）
+    // 检查场景是否存在
     if (!this.itemsText || !this.itemsText.active) {
       return;
     }
-    
+
+    // 清理旧图标
+    this.itemIcons.forEach(obj => obj.destroy());
+    this.itemIcons = [];
+
     if (this.items.length === 0) {
       this.itemsText.setText('（空）');
       this.itemsText.setColor('#aaaaaa');
-    } else {
-      const names = this.items.map(item => {
-        const icon = item.id === 'map_fragment' ? '🗺️' : '🔑';
-        return `${icon} ${item.name}`;
-      }).join(', ');
-      this.itemsText.setText(names);
-      this.itemsText.setColor('#ffdd44');
+      this.itemsText.setVisible(true);
+      return;
     }
+
+    this.itemsText.setVisible(false);
+
+    const panelX = GAME_WIDTH - 160;
+    const panelY = 10;
+    let currentX = panelX + 8;
+    const baseY = panelY + 22;
+
+    this.items.forEach((item, index) => {
+      if (index > 0) {
+        const sep = this.scene.add.text(currentX, baseY, ', ', {
+          fontSize: '11px',
+          fontFamily: 'Arial',
+          color: '#ffdd44'
+        }).setScrollFactor(0).setDepth(1501);
+        this.itemIcons.push(sep);
+        currentX += sep.width;
+      }
+
+      if (item.id === 'house_key') {
+        const keyIcon = this.scene.add.image(currentX + 6, baseY + 6, 'key');
+        keyIcon.setDisplaySize(12, 12);
+        keyIcon.setScrollFactor(0).setDepth(1501);
+        keyIcon.setOrigin(0, 0.5);
+        this.itemIcons.push(keyIcon);
+        currentX += 14;
+
+        const t = this.scene.add.text(currentX, baseY, item.name, {
+          fontSize: '11px',
+          fontFamily: 'Arial',
+          color: '#ffdd44'
+        }).setScrollFactor(0).setDepth(1501);
+        this.itemIcons.push(t);
+        currentX += t.width;
+      } else {
+        const icon = item.id === 'map_fragment' ? '🗺️' : '';
+        const t = this.scene.add.text(currentX, baseY, `${icon} ${item.name}`, {
+          fontSize: '11px',
+          fontFamily: 'Arial',
+          color: '#ffdd44'
+        }).setScrollFactor(0).setDepth(1501);
+        this.itemIcons.push(t);
+        currentX += t.width;
+      }
+    });
   }
 }
