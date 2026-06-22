@@ -93,6 +93,9 @@ export class GameScene extends Phaser.Scene {
     // 加载钥匙图标
     this.load.image('key', 'assets/key.png');
     
+    // 加载引导小手图标
+    this.load.image('hand', 'assets/hand.png');
+    
     // 加载火堆序列帧动画（default_0005 到 default_0095，共19帧）
     for (let i = 0; i < 19; i++) {
       const frameNum = String(5 + i * 5).padStart(4, '0');
@@ -269,16 +272,18 @@ export class GameScene extends Phaser.Scene {
     // 使用世界坐标
     const worldPos = paper.getTileWorldPosition(this.guideTargetTile.x, this.guideTargetTile.y+1);
     
-    // 创建高亮圆形（添加到场景中）
-    this.guideCircle = this.add.circle(worldPos.x, worldPos.y, CELL_SIZE / 2, 0x00ff00);
-    this.guideCircle.setAlpha(0.5);
-    this.guideCircle.setDepth(1000);  // 设置高深度确保在最上层
+    // 创建引导小手（添加到场景中）
+    this.guideHand = this.add.image(worldPos.x, worldPos.y, 'hand');
+    this.guideHand.setAlpha(0.9);
+    this.guideHand.setDepth(1000);  // 设置高深度确保在最上层
+    this.guideHand.setOrigin(0.5);
+    this.guideHand.setScale(0.6);
     
     // 创建脉冲动画（保存引用以便停止）
     this.guideTween = this.tweens.add({
-      targets: this.guideCircle,
-      scale: 1.5,
-      alpha: 0.2,
+      targets: this.guideHand,
+      scale: 0.9,
+      alpha: 0.5,
       duration: 800,
       yoyo: true,
       repeat: -1,
@@ -309,13 +314,110 @@ export class GameScene extends Phaser.Scene {
     }
     
     // 移除引导元素
-    if (this.guideCircle) {
-      this.guideCircle.destroy();
-      this.guideCircle = null;
+    if (this.guideHand) {
+      this.guideHand.destroy();
+      this.guideHand = null;
     }
     if (this.guideText) {
       this.guideText.destroy();
       this.guideText = null;
+    }
+
+    // 启动折叠引导：拖拽左上角折叠
+    this.initFoldGuide();
+  }
+
+  /**
+   * 初始化折叠引导
+   */
+  initFoldGuide() {
+    this.foldGuideActive = true;
+    const paper = this.currentPaper;
+    if (!paper) return;
+
+    // 限制只能折叠左上角
+    paper.allowedFoldEdges = ['topLeft'];
+
+    // 获取纸张左上角世界坐标
+    const worldPos = {
+      x: paper.x + paper.paperRect.x,
+      y: paper.y + paper.paperRect.y
+    };
+
+    // 创建引导小手
+    this.foldGuideHand = this.add.image(worldPos.x, worldPos.y, 'hand');
+    this.foldGuideHand.setAlpha(0.9);
+    this.foldGuideHand.setDepth(1000);
+    this.foldGuideHand.setOrigin(0.5);
+    this.foldGuideHand.setScale(0.6);
+
+    // 脉冲动画
+    this.foldGuideTween = this.tweens.add({
+      targets: this.foldGuideHand,
+      scale: 0.9,
+      alpha: 0.5,
+      duration: 800,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
+
+    // 提示文字
+    this.foldGuideText = this.add.text(worldPos.x, worldPos.y - 35, '拖拽左上角折叠', {
+      fontSize: '14px',
+      fontFamily: 'Microsoft YaHei',
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 3,
+      align: 'center'
+    }).setOrigin(0.5).setDepth(1001);
+
+    // 定期检查折叠是否完成
+    this.foldGuideTimer = this.time.addEvent({
+      delay: 200,
+      callback: this.checkFoldGuideComplete,
+      callbackScope: this,
+      loop: true
+    });
+  }
+
+  /**
+   * 检查折叠引导是否完成
+   */
+  checkFoldGuideComplete() {
+    if (!this.foldGuideActive) return;
+    const paper = this.currentPaper;
+    if (paper && paper.foldTopLeft > 0) {
+      this.completeFoldGuide();
+    }
+  }
+
+  /**
+   * 完成折叠引导（清除引导元素）
+   */
+  completeFoldGuide() {
+    this.foldGuideActive = false;
+
+    if (this.foldGuideTimer) {
+      this.foldGuideTimer.remove();
+      this.foldGuideTimer = null;
+    }
+    if (this.foldGuideTween) {
+      this.foldGuideTween.stop();
+      this.foldGuideTween = null;
+    }
+    if (this.foldGuideHand) {
+      this.foldGuideHand.destroy();
+      this.foldGuideHand = null;
+    }
+    if (this.foldGuideText) {
+      this.foldGuideText.destroy();
+      this.foldGuideText = null;
+    }
+
+    const paper = this.currentPaper;
+    if (paper) {
+      paper.allowedFoldEdges = null;
     }
   }
 
