@@ -87,6 +87,9 @@ export class GameScene extends Phaser.Scene {
     // 加载 part_2 视频
     this.load.video('part_2_video', 'assets/video/part_2.mp4', false);
     
+    // 加载背景音乐
+    this.load.audio('bgm', 'assets/audio/bgm.mp3');
+    
     // 加载火堆序列帧动画（default_0005 到 default_0095，共19帧）
     for (let i = 0; i < 19; i++) {
       const frameNum = String(5 + i * 5).padStart(4, '0');
@@ -122,6 +125,16 @@ export class GameScene extends Phaser.Scene {
     this.initPlayer();
 
     this.focusCameraOnPaper(this.currentPaperId, false);
+
+    // 播放背景音乐（循环，处理浏览器自动播放限制）
+    this.bgm = this.sound.add('bgm', { loop: true, volume: 0.5 });
+    if (this.sound.locked) {
+      this.sound.once('unlocked', () => {
+        this.bgm.play();
+      });
+    } else {
+      this.bgm.play();
+    }
 
     // 6. 绑定键盘和点击交互
     this.initInput();
