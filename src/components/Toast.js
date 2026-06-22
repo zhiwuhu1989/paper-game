@@ -1,4 +1,4 @@
-import { GAME_WIDTH, GAME_HEIGHT } from '../config/gameConfig.js';
+import { GAME_WIDTH, GAME_HEIGHT, PAPER_WIDTH } from '../config/gameConfig.js';
 
 export class Toast {
   constructor(scene) {
@@ -30,12 +30,11 @@ export class Toast {
     this.isShowing = true;
     const { message, duration, color } = this.queue.shift();
 
-    const centerX = GAME_WIDTH / 2;
-    const centerY = GAME_HEIGHT / 2 - 60;
+    const camera = this.scene.cameras.main;
+    const centerX = camera.width / 2;
+    const centerY = camera.height / 2 - 60;
 
-    const bg = this.scene.add.graphics();
-    bg.setScrollFactor(0);
-    bg.setDepth(3000);
+    const maxTextWidth = PAPER_WIDTH * 0.8;
 
     const text = this.scene.add.text(centerX, centerY, message, {
       fontSize: '16px',
@@ -44,19 +43,24 @@ export class Toast {
       stroke: '#000000',
       strokeThickness: 4,
       align: 'center',
-      wordWrap: { width: GAME_WIDTH * 0.7 }
+      wordWrap: { width: maxTextWidth }
     }).setOrigin(0.5).setScrollFactor(0).setDepth(3001);
 
     const bounds = text.getBounds();
     const pad = 12;
-    bg.fillStyle(0x000000, 0.8);
-    bg.fillRoundedRect(
-      bounds.x - pad,
-      bounds.y - pad,
-      bounds.width + pad * 2,
-      bounds.height + pad * 2,
-      8
+    const bgWidth = Math.max(bounds.width + pad * 2, 120);
+    const bgHeight = bounds.height + pad * 2;
+
+    // 使用 dialog_bubble 九宫格底图，避免拉伸变形
+    const bg = this.scene.add.nineslice(
+      centerX, centerY,
+      'dialog_bubble',
+      null,
+      bgWidth, bgHeight,
+      20, 20, 12, 12
     );
+    bg.setScrollFactor(0);
+    bg.setDepth(3000);
 
     // Fade in
     bg.setAlpha(0);

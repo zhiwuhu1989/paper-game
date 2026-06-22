@@ -64,6 +64,7 @@ export class GameScene extends Phaser.Scene {
     this.load.image('dialog_bg', 'assets/dialog_bg.png');
     this.load.image('dialog_speaker', 'assets/dialog_speaker.png');
     this.load.image('dialog_triangle', 'assets/dialog_triangle.png');
+    this.load.image('dialog_bubble', 'assets/dialog_bubble.png');
     
     // 加载立绘资源
     this.load.image('profile_picture_1', 'assets/profile_picture_1.png');

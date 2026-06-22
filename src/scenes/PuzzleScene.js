@@ -11,8 +11,8 @@ export class PuzzleScene extends Phaser.Scene {
     this.pieces = [];           // 碎片数组
     this.pieceWidth = 0;        // 每个碎片宽度
     this.pieceHeight = 0;       // 每个碎片高度
-    this.gridCols = 3;          // 列数
-    this.gridRows = 3;          // 行数
+    this.gridCols = 2;          // 列数
+    this.gridRows = 2;          // 行数
     this.pieceCount = 0;        // 碎片总数
     this.onComplete = null;     // 完成回调
     this.isComplete = false;    // 是否已完成

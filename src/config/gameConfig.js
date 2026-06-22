@@ -75,7 +75,7 @@ export const NPC_CONFIG = {
     height: 49,            // 显示高度（像素）
     offsetX: 5,           // 像素级水平偏移（正数向右，负数向左）
     offsetY: 20,           // 像素级垂直偏移（正数向下，负数向上）
-    name: '小黑瘦',
+    name: '小胖猫',
     dialogues: [
       { speaker: 'npc', text: '好冷啊...我需要生一堆火来取暖。' },
       { speaker: 'player', text: '看起来你需要帮助，我能做些什么？' },

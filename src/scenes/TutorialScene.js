@@ -69,6 +69,9 @@ export class TutorialScene extends Phaser.Scene {
     this.load.image('npc_2', 'assets/npc_2.png');
     this.load.image('npc_3', 'assets/npc_3.png');
 
+    // 加载提示气泡底图
+    this.load.image('dialog_bubble', 'assets/dialog_bubble.png');
+
     // 加载箭头图片资源
     this.load.image('arrow', 'assets/arrow.png');
 
@@ -519,7 +522,7 @@ export class TutorialScene extends Phaser.Scene {
     this.bottomLine.setAlpha(0);
     
     // 上下拖拽提示（初始提示向上滑）
-    this.guideText = this.add.text(centerX, centerY - 120, '向上拖拽打开上眼', {
+    this.guideText = this.add.text(centerX, centerY - 120, '向上拖拽睁开双眼', {
       fontSize: '20px',
       fontFamily: 'Microsoft YaHei',
       color: '#ffffff',
@@ -771,7 +774,7 @@ export class TutorialScene extends Phaser.Scene {
         
         // 更新提示文字
         if (this.guideText) {
-          this.guideText.setText('向下拖拽打开下眼');
+          this.guideText.setText('向下拖拽睁开双眼');
           this.tweens.add({
             targets: this.guideText,
             alpha: 1,
