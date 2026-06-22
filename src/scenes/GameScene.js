@@ -877,6 +877,11 @@ export class GameScene extends Phaser.Scene {
       this.player.setVisible(false);
     }
     
+    // 暂停背景音乐
+    if (this.bgm && this.bgm.isPlaying) {
+      this.bgm.pause();
+    }
+    
     // 获取当前纸张的位置，视频需要与纸张对齐
     const paperX = this.currentPaper.x;
     const paperY = this.currentPaper.y;
@@ -901,6 +906,10 @@ export class GameScene extends Phaser.Scene {
       if (this.player) {
         this.player.setVisible(true);
       }
+      // 恢复背景音乐
+      if (this.bgm && this.bgm.isPaused) {
+        this.bgm.resume();
+      }
       if (callback) {
         callback();
       }
@@ -914,6 +923,10 @@ export class GameScene extends Phaser.Scene {
       // 显示主角
       if (this.player) {
         this.player.setVisible(true);
+      }
+      // 恢复背景音乐
+      if (this.bgm && this.bgm.isPaused) {
+        this.bgm.resume();
       }
       if (callback) {
         callback();
