@@ -745,6 +745,11 @@ export class GameScene extends Phaser.Scene {
     // 设置黑色背景
     this.cameras.main.setBackgroundColor('#000000');
     
+    // 隐藏主角
+    if (this.player) {
+      this.player.setVisible(false);
+    }
+    
     // 获取当前纸张的位置，视频需要与纸张对齐
     const paperX = this.currentPaper.x;
     const paperY = this.currentPaper.y;
@@ -765,6 +770,10 @@ export class GameScene extends Phaser.Scene {
       this.part2Video.destroy();
       // 恢复原来的背景
       this.cameras.main.setBackgroundColor('rgba(0, 0, 0, 0)');
+      // 显示主角
+      if (this.player) {
+        this.player.setVisible(true);
+      }
       if (callback) {
         callback();
       }
@@ -775,6 +784,10 @@ export class GameScene extends Phaser.Scene {
       this.part2Video.destroy();
       // 恢复原来的背景
       this.cameras.main.setBackgroundColor('rgba(0, 0, 0, 0)');
+      // 显示主角
+      if (this.player) {
+        this.player.setVisible(true);
+      }
       if (callback) {
         callback();
       }

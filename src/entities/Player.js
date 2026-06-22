@@ -27,7 +27,7 @@ export class Player extends Phaser.GameObjects.Container {
         { key: 'player_frame_6' },
         { key: 'player_frame_7' }
       ],
-      frameRate: 30,
+      frameRate: 10,
       repeat: -1
     });
     
@@ -42,6 +42,10 @@ export class Player extends Phaser.GameObjects.Container {
 
   moveTo(worldX, worldY, duration, onComplete) {
     this.isMoving = true;
+    
+    // 根据移动方向翻转 sprite（美术资源朝左）
+    const direction = worldX - this.x;
+    this.sprite.setFlipX(direction > 0);
     
     // 切换到行走动画
     this.sprite.play('player_walk');

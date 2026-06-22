@@ -1,4 +1,4 @@
-import { GAME_WIDTH, GAME_HEIGHT } from '../config/gameConfig.js';
+import { GAME_WIDTH, GAME_HEIGHT, PAPER_HEIGHT } from '../config/gameConfig.js';
 
 export class DialogueBox {
   constructor(scene) {
@@ -22,12 +22,16 @@ export class DialogueBox {
     const cameraHeight = camera.height;
 
     // 对话框背景图片 - 使用原始尺寸
-    this.dialogBg = this.scene.add.image(cameraWidth / 2, cameraHeight - 80, 'dialog_bg');
+    this.dialogBg = this.scene.add.image(cameraWidth / 2, 0, 'dialog_bg');
     this.dialogBg.setOrigin(0.5, 0.5);
     this.dialogBg.setScrollFactor(0);
     this.dialogBg.setDepth(2000);
     // 使用原始尺寸，不缩放
     this.dialogBg.setScale(1);
+
+    // 对话框底部对齐纸张下边缘
+    const paperBottomY = cameraHeight / 2 + PAPER_HEIGHT / 2;
+    this.dialogBg.y = paperBottomY - this.dialogBg.height / 2;
 
     // 获取对话框实际尺寸
     const boxWidth = this.dialogBg.width;

@@ -10,7 +10,7 @@ export const EDGE_X_THRESHOLD = 20;
 export const EDGE_Y_THRESHOLD = 200;
 export const EDGE_ANGLE_THRESHOLD = 50;
 export const FOLD_SNAP_THRESHOLD = 15;
-export const PLAYER_MOVE_DURATION = 180;
+export const PLAYER_MOVE_DURATION = 600;
 export const PLAYER_RADIUS_RATIO = 0.3;
 
 // 调试配置
