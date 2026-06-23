@@ -719,36 +719,38 @@ export class GameScene extends Phaser.Scene {
     if (this.dialogueBox.isActive) return;
     if (npc.hasGivenReward) return;
 
-    // 检查是否有任务要求
-    const hasQuest = npc.requiredRepair && !npc.questCompleted;
-    const isQuestCompleted = this.checkRepairCompleted(npc.requiredRepair);
+    const hasRepairQuest = !!npc.requiredRepair;
+    const isQuestCompleted = hasRepairQuest && this.checkRepairCompleted(npc.requiredRepair);
+    const questDialogueCount = npc.questDialogueCount || 0;
+
+    let dialoguesToShow;
+
+    if (hasRepairQuest && questDialogueCount > 0) {
+      if (!isQuestCompleted) {
+        // 任务未完成
+        if (npc.questGiven) {
+          this.toast.show('请先帮我燃起篝火，再来领取奖励吧！', 2500, '#6B4423');
+          return;
+        }
+        // 第一次对话：告诉任务
+        dialoguesToShow = npc.dialogues.slice(0, questDialogueCount);
+        npc.questGiven = true;
+      } else {
+        // 任务完成：感谢+奖励
+        dialoguesToShow = npc.dialogues.slice(questDialogueCount);
+      }
+    } else {
+      // 没有任务要求或不使用分段对话，使用全部对话
+      dialoguesToShow = npc.dialogues;
+    }
 
     this.dialogueBox.show(
-      npc.dialogues,
+      dialoguesToShow,
       { npc: npc.name, player: '你' },
       () => {
-        // 对话完成后检查任务状态
-        if (hasQuest) {
-          if (isQuestCompleted) {
-            // 任务已完成，给予奖励
-            npc.questCompleted = true;
-            if (npc.reward && !npc.hasGivenReward) {
-              npc.hasGivenReward = true;
-              npc.hideMark();
-              this.inventory.addItem(npc.reward);
-              if (npc.reward.id === 'house_key') {
-                this.toast.show('已获得', 3000, '#8B5A2B', 'key');
-              } else {
-                this.toast.show(`获得物品：${npc.reward.name}`, 3000, '#6B4423');
-              }
-            }
-          } else {
-            // 任务未完成，提示玩家
-            this.toast.show('请先完成任务再回来领取奖励！', 2500, '#6B4423');
-          }
-        } else {
-          // 没有任务要求，直接给奖励
-          if (npc.reward && !npc.hasGivenReward) {
+        if (npc.reward && !npc.hasGivenReward) {
+          // 只有在任务完成或没有任务时才给奖励
+          if (!hasRepairQuest || isQuestCompleted) {
             npc.hasGivenReward = true;
             npc.hideMark();
             this.inventory.addItem(npc.reward);

@@ -20,6 +20,8 @@ export class NPC extends Phaser.GameObjects.Container {
     this.requiredRepair = config.requiredRepair; // 需要修复的装饰名称
     this.hasGivenReward = false;
     this.questCompleted = false; // 任务是否已完成
+    this.questGiven = false; // 是否已经告知过任务
+    this.questDialogueCount = config.questDialogueCount || 0; // 任务说明对话数量（0表示不分段）
 
     // 应用偏移（默认 0）
     const offsetX = config.offsetX || 0;

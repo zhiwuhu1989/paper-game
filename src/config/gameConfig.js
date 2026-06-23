@@ -85,6 +85,7 @@ export const NPC_CONFIG = {
       { speaker: 'player', text: '火堆已经点燃了！' },
       { speaker: 'npc', text: '太感谢你了！这把钥匙送给你，它能打开那间小屋的门。' }
     ],
+    questDialogueCount: 5,  // 前5句为任务说明对话
     requiredRepair: 'broken_fire',  // 需要修复的装饰名称
     reward: { type: 'key', id: 'house_key', name: '小屋钥匙' }
   }
